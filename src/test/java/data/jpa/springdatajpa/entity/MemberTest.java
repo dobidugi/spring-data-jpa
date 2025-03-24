@@ -1,5 +1,6 @@
 package data.jpa.springdatajpa.entity;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -46,6 +48,26 @@ class MemberTest {
 
     }
 
+    @Test
+    public void startQuerydsl() {
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+        Member member1 = new Member("member22", 10, teamA);
+        em.persist(member1);
 
+        em.flush();  // DB에 실제 INSERT
+        em.clear();  // 영속성 컨텍스트 초기화
+
+        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
+        QMember qMember = new QMember("qMember");
+
+        Member findMember = jpaQueryFactory
+                .select(qMember)
+                .from(qMember)
+                .where(qMember.username.eq("member22"))
+                .fetchOne();
+
+        assertThat(findMember.getUsername()).isEqualTo("member22");
+    }
 
 }

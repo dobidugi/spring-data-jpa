@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@ToString(of = {"id, name"})
+@ToString()
 public class Team {
 
     @Id
