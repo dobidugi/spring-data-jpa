@@ -136,4 +136,32 @@ class MemberTest {
 
 //        assertThat(findMember.getUsername()).isEqualTo("mem1");
     }
+
+    @Test
+    public void sort() {
+        em.persist(new Member("mem3", 100));
+        em.persist(new Member("mem4", 100));
+        em.persist(new Member(null, 100));
+
+        em.flush();
+        em.clear();
+
+        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
+
+        List<Member> result = jpaQueryFactory
+                .selectFrom(member)
+                .where(member.age.eq(100))
+                .orderBy(member.age.desc(), member.username.desc().nullsLast())
+                .fetch();
+
+        Member member = result.get(0);
+        Member member2 = result.get(1);
+        Member member3 = result.get(2);
+
+        assertThat(member.getUsername()).isEqualTo("mem4");
+        assertThat(member2.getUsername()).isEqualTo("mem3");
+        assertThat(member3.getUsername()).isNull();
+
+
+    }
 }
