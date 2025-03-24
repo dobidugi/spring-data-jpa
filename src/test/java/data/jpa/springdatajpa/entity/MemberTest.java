@@ -1,5 +1,6 @@
 package data.jpa.springdatajpa.entity;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static data.jpa.springdatajpa.entity.QMember.member;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -107,4 +110,30 @@ class MemberTest {
         assertThat(findMember.getUsername()).isEqualTo("mem1");
     }
 
+    @Test
+    public void searchResult() {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .fetchFirst(); // limit(1).fetchOne()
+
+        Member findMember2 = queryFactory
+                .selectFrom(member)
+                .fetchOne(); // fetchFirst()와 동일
+
+        List<Member> findMember3 = queryFactory
+                .selectFrom(member)
+                .fetch(); // 리스트 반환
+
+
+        long findMember34 = queryFactory
+                .selectFrom(member)
+                .fetch().size(); // or fetch().count()
+
+
+
+
+//        assertThat(findMember.getUsername()).isEqualTo("mem1");
+    }
 }
