@@ -1,6 +1,7 @@
 package data.jpa.springdatajpa.entity;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static data.jpa.springdatajpa.entity.QMember.member;
+import static data.jpa.springdatajpa.entity.QTeam.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,12 +28,19 @@ class MemberTest {
 
     @BeforeEach
     public void init() {
-        Team teamA = new Team("freA");
+        Team teamA = new Team("ATeam");
         em.persist(teamA);
+        Team teamB = new Team("BTeam");
+        em.persist(teamB);
         Member member1 = new Member("mem1", 10, teamA);
         Member member2 = new Member("mem2", 20, teamA);
+
+        Member member3 = new Member("mem3", 10, teamB);
+        Member member4 = new Member("mem4", 20, teamB);
         em.persist(member1);
         em.persist(member2);
+        em.persist(member3);
+        em.persist(member4);
     }
 
     @Test
@@ -178,10 +187,45 @@ class MemberTest {
     }
 
     @Test
-    public void paging2() {
-        QueryResults<Member> memberQueryResults = new JPAQueryFactory(em)
-                .selectFrom(member)
-                .orderBy(member.username.desc())
-                .fetchResults();
+    public void aggregation() {
+        List<Tuple> _tuple = new JPAQueryFactory(em)
+                .select(
+                        member.age.sum(),
+                        member.age.avg(),
+                        member.age.max(),
+                        member.age.min()
+                ).from(member)
+                .fetch();
+        Tuple tuple = _tuple.get(0);
+        assertThat(tuple.get(member.age.sum())).isEqualTo(60);
+        assertThat(tuple.get(member.age.avg())).isEqualTo(15);
+        assertThat(tuple.get(member.age.max())).isEqualTo(20);
+        assertThat(tuple.get(member.age.min())).isEqualTo(10);
+
+    }
+
+    /*
+        팀의 이름과 각 팀의 평균 연령을 구하기
+     */
+    @Test
+    public void group() {
+        List<Tuple> fetch = new JPAQueryFactory(em)
+                .select(
+                        team.name,
+                        member.age.avg()
+                ).from(member)
+                .join(member.team, team)
+                .groupBy(team.name)
+                .fetch();
+
+        Tuple teamA = fetch.get(0);
+        Tuple teamB = fetch.get(1);
+
+        assertThat(teamA.get(team.name)).isEqualTo("ATeam");
+        assertThat(teamA.get(member.age.avg())).isEqualTo(15);
+
+        assertThat(teamB.get(team.name)).isEqualTo("BTeam");
+        assertThat(teamB.get(member.age.avg())).isEqualTo(15);
+
     }
 }
