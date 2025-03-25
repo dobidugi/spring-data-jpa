@@ -228,4 +228,20 @@ class MemberTest {
         assertThat(teamB.get(member.age.avg())).isEqualTo(15);
 
     }
+
+    /**
+     * 팀 A에 소속된 모든 회원
+     */
+    @Test
+    public void join() {
+        List<Member> members= new JPAQueryFactory(em)
+                .selectFrom(member)
+                .join(member.team, team)
+                .where(team.name.eq("ATeam"))
+                .orderBy(member.age.asc())
+                .fetch();
+
+        assertThat(members.get(0).getUsername()).isEqualTo("mem1");
+        assertThat(members.get(1).getUsername()).isEqualTo("mem2");
+    }
 }
