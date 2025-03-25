@@ -164,4 +164,24 @@ class MemberTest {
 
 
     }
+
+    @Test
+    public void paging1() {
+        List<Member> fetch = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(0)
+                .limit(2)
+                .fetch();
+
+        assertThat(fetch.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void paging2() {
+        QueryResults<Member> memberQueryResults = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .fetchResults();
+    }
 }
