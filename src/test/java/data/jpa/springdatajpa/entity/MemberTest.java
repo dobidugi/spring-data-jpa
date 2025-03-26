@@ -257,4 +257,34 @@ class MemberTest {
             System.out.println("tuple = " + tuple);
         }
     }
+
+    @Test
+    public void fetchJoin() {
+        em.flush();
+        em.clear();
+
+        Member findMember = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("mem1"))
+                .fetchOne();
+
+        boolean loaded = em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).isTrue();
+    }
+
+    @Test
+    public void fetchJoinNo() {
+        em.flush();
+        em.clear();
+
+        Member findMember = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("mem1"))
+                .fetchOne();
+
+        boolean loaded = em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).isTrue();
+    }
 }
