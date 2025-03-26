@@ -2,6 +2,7 @@ package data.jpa.springdatajpa.entity;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -286,5 +287,24 @@ class MemberTest {
 
         boolean loaded = em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(findMember.getTeam());
         assertThat(loaded).isTrue();
+    }
+
+    /**
+     * 나이가 가장 적은 회원 조회
+     */
+    @Test
+    public void subQuery() {
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> members = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                                .select(memberSub.age.min())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(members.get(0).getAge()).isEqualTo(10);
     }
 }
