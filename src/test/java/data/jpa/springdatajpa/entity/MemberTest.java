@@ -244,4 +244,17 @@ class MemberTest {
         assertThat(members.get(0).getUsername()).isEqualTo("mem1");
         assertThat(members.get(1).getUsername()).isEqualTo("mem2");
     }
+
+    @Test
+    public void join_on_filter() {
+        List<Tuple> fetch = new JPAQueryFactory(em)
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team).on(team.name.eq("ATeam"))
+                .fetch();
+
+        for (Tuple tuple : fetch) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
 }
