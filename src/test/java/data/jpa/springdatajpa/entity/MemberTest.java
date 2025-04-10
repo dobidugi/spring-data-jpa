@@ -6,6 +6,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import data.jpa.springdatajpa.dto.MemberDTO;
+import data.jpa.springdatajpa.dto.QMemberDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -388,6 +389,19 @@ class MemberTest {
                 )
                 .from(member)
                 .join(member.team, team)
+                .fetch()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void findDtoByQueryProjection() {
+        new JPAQueryFactory(em)
+                .select(new QMemberDTO(
+                        member.id,
+                        member.username,
+                        team.name.as("teamName")
+                ))
+                .from(member)
                 .fetch()
                 .forEach(System.out::println);
     }
