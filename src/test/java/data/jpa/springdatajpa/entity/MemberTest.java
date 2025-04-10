@@ -307,4 +307,15 @@ class MemberTest {
 
         assertThat(members.get(0).getAge()).isEqualTo(10);
     }
+
+    @Test
+    public void concat() {
+        // stringValue()는 Enum을 사용할 떄 편함
+        new JPAQueryFactory(em)
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .fetch()
+                .forEach(System.out::println);
+
+    }
 }
