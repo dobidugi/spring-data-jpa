@@ -2,8 +2,10 @@ package data.jpa.springdatajpa.entity;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import data.jpa.springdatajpa.dto.MemberDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -317,5 +319,76 @@ class MemberTest {
                 .fetch()
                 .forEach(System.out::println);
 
+    }
+
+    @Test
+    public void projection() {
+        new JPAQueryFactory(em)
+                .select(member.username)
+                .from(member)
+                .fetch()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void tupleProjection() {
+        List<Tuple> fetch = new JPAQueryFactory(em)
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : fetch) {
+            String name = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("name = " + name + ", age = " + age);
+        }
+    }
+
+    @Test
+    public void findDtoByQueryDslSetter() {
+        new JPAQueryFactory(em)
+                .select(
+                        Projections.bean(MemberDTO.class,
+                                member.id,
+                                member.username,
+                                team.name.as("teamName")
+                        )
+                )
+                .from(member)
+                .join(member.team, team)
+                .fetch()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void findDtoByQueryDslField() {
+        new JPAQueryFactory(em)
+                .select(
+                        Projections.fields(MemberDTO.class,
+                                member.id,
+                                member.username,
+                                team.name.as("teamName")
+                        )
+                )
+                .from(member)
+                .join(member.team, team)
+                .fetch()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void findDtoByQueryDslConstructor() {
+        new JPAQueryFactory(em)
+                .select(
+                        Projections.constructor(MemberDTO.class,
+                                member.id,
+                                member.username,
+                                team.name.as("teamName")
+                        )
+                )
+                .from(member)
+                .join(member.team, team)
+                .fetch()
+                .forEach(System.out::println);
     }
 }
