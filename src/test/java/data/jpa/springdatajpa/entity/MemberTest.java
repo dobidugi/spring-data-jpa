@@ -3,6 +3,7 @@ package data.jpa.springdatajpa.entity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -429,5 +430,29 @@ class MemberTest {
                 .selectFrom(member)
                 .where(builder)
                 .fetch();
+    }
+
+    @Test
+    public void dynamicQueryWhere() {
+        String username = "mem1";
+        Integer age = 10;
+        List<Member> members = searchMember2(username, age);
+        members.forEach(System.out::println);
+    }
+
+    private List<Member> searchMember2(String username, Integer age) {
+
+
+        return new JPAQueryFactory(em)
+                .selectFrom(member)
+                .where(usernameEq(username), ageEq(age))
+                .fetch();
+    }
+
+    private Predicate usernameEq(String username) {
+        return username != null ? member.username.eq(username) : null;
+    }
+    private Predicate ageEq(Integer age) {
+        return age != null ? member.age.eq(age) : null;
     }
 }
