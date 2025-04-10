@@ -1,5 +1,6 @@
 package data.jpa.springdatajpa.entity;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -404,5 +405,29 @@ class MemberTest {
                 .from(member)
                 .fetch()
                 .forEach(System.out::println);
+    }
+
+    @Test
+    public void dynamicQueryBooleanBuilder() {
+        String username = "mem1";
+        Integer age = 10;
+        List<Member> members = searchMember(username, age);
+        members.forEach(System.out::println);
+    }
+
+    private List<Member> searchMember(String username, Integer age) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if(username != null) {
+            builder.and(member.username.eq(username));
+        }
+        if(age != null) {
+            builder.and(member.age.eq(age));
+        }
+
+        return new JPAQueryFactory(em)
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
     }
 }
