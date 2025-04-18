@@ -5,6 +5,7 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import data.jpa.springdatajpa.dto.MemberDTO;
@@ -518,5 +519,18 @@ class MemberTest {
                 .fetch();
 
         members.forEach(System.out::println);
+    }
+
+    @Test
+    public void sqlFunction() {
+        List<String> fetch = new JPAQueryFactory(em)
+                .select(Expressions.stringTemplate(
+                        "function ('replace', {0}, {1}, {2})",
+                        member.username, "mem", "M"))
+                .from(member)
+                .fetch();
+
+        fetch.forEach(System.out::println);
+
     }
 }
