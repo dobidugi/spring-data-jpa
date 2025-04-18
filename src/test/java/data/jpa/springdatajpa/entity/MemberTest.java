@@ -455,4 +455,68 @@ class MemberTest {
     private Predicate ageEq(Integer age) {
         return age != null ? member.age.eq(age) : null;
     }
+
+    @Test
+    public void bulkUpdate() {
+        // 벌크 쿼리는
+        // 영속성 컨텍스트를 무시하고 DB에 직접 쿼리를 날림
+        // 따라서 영속성 컨텍스트에 있는 엔티티는 DB와 다를 수 있음
+        long count = new JPAQueryFactory(em)
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(20))
+                .execute();
+
+        // 벌크 연산 후 영속성 컨텍스트를 초기화 해야 함
+        em.flush();
+        em.clear();
+
+        // 영향을 받은 row 수
+        System.out.println("count = " + count);
+
+        List<Member> members = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .fetch();
+
+        members.forEach(System.out::println);
+
+    }
+
+    @Test
+    public void bulkAdd() {
+        long count = new JPAQueryFactory(em)
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+        em.flush();
+        em.clear();
+
+        System.out.println("count = " + count);
+
+        List<Member> members = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .fetch();
+
+        members.forEach(System.out::println);
+    }
+
+    @Test
+    public void bulkDelete() {
+        long count = new JPAQueryFactory(em)
+                .delete(member)
+                .where(member.age.gt(20))
+                .execute();
+
+        em.flush();
+        em.clear();
+
+        System.out.println("count = " + count);
+
+        List<Member> members = new JPAQueryFactory(em)
+                .selectFrom(member)
+                .fetch();
+
+        members.forEach(System.out::println);
+    }
 }
